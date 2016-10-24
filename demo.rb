@@ -2,7 +2,7 @@ require './movie.rb'
 require './movie_collection.rb'
 
 def print_movies(movies)
-  movies.each { |movie| puts "#{movie.title} (#{movie.date}; #{movie.genres.join("/")}) - #{movie.duration} min" }
+  movies.each { |movie| puts "#{movie.title} (#{movie.date}; #{movie.genres.join("/")}) - #{movie.duration} min ; #{movie.actors.join("/")}" }
 end
 
 
@@ -18,11 +18,23 @@ print_movies(movies.all
   .reverse
 )
 
+puts "\nИтальянские комедии"
+print_movies(movies.filter(genres: 'Comedy', countries: "Italy"))
+
+puts "\nФильмы Копполы"
+print_movies(movies.filter(director: 'Francis Ford Coppola'))
+
+puts "\nФильмы с участием Моргана"
+print_movies(movies.filter(actors: /morgan/i))
+
+puts "\nФильмы Копполы 2"
+print_movies(movies.filter(director: /coppola/i))
+
 puts "\n10 комедий (первые по дате выхода)"
- print_movies(movies.filter(genre: 'Comedy', country: "USA")
-   .sort_by(&:date)
-   .first(10)
- )
+print_movies(movies.filter(year: 1979..1980)
+  .sort_by(&:date)
+  .first(10)
+)
 
  movies.stats(:month)
   .each {|key, value| puts "#{key}: #{value}" }
@@ -33,17 +45,17 @@ movies.stats(:director)
   .each {|key, value| puts "#{key}: #{value}" }
 
 puts "\nАктеры"
-movies.stats(:actor)
+movies.stats(:actors)
   .first(5)
   .each {|key, value| puts "#{key}: #{value}" }
 
 puts "\nСтраны"
-movies.stats(:country)
+movies.stats(:countries)
   .first(5)
   .each {|key, value| puts "#{key}: #{value}" }
 
 puts "\nЖанры"
-movies.stats(:genre)
+movies.stats(:genres)
   .first(5)
   .each {|key, value| puts "#{key}: #{value}" }
 
@@ -51,9 +63,9 @@ puts "\nАктеры первого фильма"
 puts movies.all.first.actors
 
 begin
-  puts movies.all.first.has_genre?('Comedy')
-  puts movies.all.first.has_genre?('выапComedy')
-  puts movies.all.first.has_genre?('Cdomedy')
+  puts movies.all.first.has_genre?('Comedy', movies)
+  puts movies.all.first.has_genre?('выапComedy', movies)
+  puts movies.all.first.has_genre?('Cdomedy', movies)
 rescue ArgumentError => err
   puts err
 end

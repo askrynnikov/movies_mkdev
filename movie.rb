@@ -3,24 +3,27 @@ require 'date'
 class Movie
   attr_reader :link, :title, :year, :countries, :date, :genres, :duration, :rate, :director, :actors
 
-  GERNES = %w(Action Adventure Animation Biography Comedy Crime Drama Family
-    Fantasy Film-Noir History Horror Music Musical Mystery Romance Sci-Fi Sport
-    Thriller War Western)
-
-  def initialize(movie = {})
-    @link, @title, @year, @countries, @date, @genres, @duration,
-    @rate, @director, @actors =
-      post_process(movie)
-      .values_at(:link, :title, :year, :countries, :date, :genres, :duration,
-      :rate, :director, :actors)
+  def initialize(link:, title:, year:, countries:, date:, genres:, duration:,
+      rate:, director:, actors:)
+    @link = link.to_i
+    @title = title
+    @year = year.to_i
+    @countries = countries.split(",")
+    @date = parse_date(date)
+    @genres = genres.split(",")
+    @duration = duration.to_i
+    @rate = rate.to_f
+    @director = director
+    @actors = actors.split(",")
   end
 
-  def has_genre?(genre)
-    if GERNES.include?(genre)
-      genres.include?(genre)
-    else
-      raise ArgumentError, " Нет такого жанра: #{genre}. Список допустимых: #{GERNES.join(" ,")}"
-    end
+  def month
+    @date.month
+  end
+
+  def has_genre?(genre, movies)
+    raise ArgumentError, " Нет такого жанра: #{genre}.}" unless movies.include_genre?(genre)
+    genres.include?(genre)
   end
 
   private
@@ -32,15 +35,4 @@ class Movie
     date += "-01" if date.split("-").size == 2
     Date.strptime(date, '%Y-%m-%d')
   end
-
-  def post_process(movie)
-    movie[:year] = movie[:year].to_i
-    movie[:countries] = movie[:countries].split(",")
-    movie[:date] = parse_date(movie[:date])
-    movie[:genres] = movie[:genres].split(",")
-    movie[:duration] = movie[:duration].to_i
-    movie[:actors] = movie[:actors].split(",")
-    movie
-  end
-
 end

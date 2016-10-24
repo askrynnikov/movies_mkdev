@@ -13,7 +13,7 @@ class MovieCollection
       .map { |movie| Movie.new(FIELDS.zip(movie).to_h)}
   end
 
-  def all()
+  def all
     @movies
   end
 
@@ -21,40 +21,43 @@ class MovieCollection
     @movies.sort_by(&param)
   end
 
-  def filter(param)
+  def filter(parameters = {})
     movies = @movies.dup
-    movies.select! { |m| m.genres.include?(param[:genre]) } unless param[:genre].nil?
-    movies.select! { |m| m.countries.include?(param[:country]) } unless param[:country].nil?
+    parameters.each do |field, value|
+      movies = movies.reduce(Array.new) do |filtrated, m|
+        f = m.send(field)
+        filtrated << m if case value
+          when Range
+            value === field
+          when Regexp
+            if f.is_a?(Array)
+              f.any? {|i| value =~ i}
+            else
+              value =~ f
+            end
+          else
+            f.include?(value)
+          end
+        filtrated
+      end
+    end
     return movies
   end
 
   def stats(param)
-    case param
-    when :director
-      @movies
-        .each_with_object(Hash.new { 0 }) { |m, stats| stats[m.director] += 1 }
-        .sort
-    when :year
-      @movies
-        .each_with_object(Hash.new { 0 }) { |m, stats| stats[m.year] += 1 }
-        .sort
-    when :month
-      @movies
-        .each_with_object(Hash.new { 0 }) { |m, stats| stats[m.date.month] += 1 }
-        .sort
-        # .each {|key, value| puts "#{Date::MONTHNAMES[key]}: #{value}" }
-    when :actor
-      @movies
-        .each_with_object(Hash.new { 0 }) { |m, stats|  m.actors.each { |name|stats[name] += 1 } }
-        .sort
-    when :country
-      @movies
-        .each_with_object(Hash.new { 0 }) { |m, stats|  m.countries.each { |name|stats[name] += 1 } }
-        .sort
-    when :genre
-      @movies
-        .each_with_object(Hash.new { 0 }) { |m, stats|  m.genres.each { |name|stats[name] += 1 } }
-        .sort
-    end
+    @movies
+      .each_with_object(Hash.new { 0 }) do |m, stats|
+        if m.send(param).is_a?(Array)
+          m.send(param).each { |name| stats[name] += 1 }
+        else
+          stats[m.send(param)] += 1
+        end
+      end
+      .sort
+  end
+
+  def include_genre?(genre)
+    @movies.any? { |m| m.genres.include?(genre)}
   end
 end
+
