@@ -4,7 +4,7 @@ class Movie
   attr_reader :link, :title, :year, :countries, :date, :genres, :duration, :rate, :director, :actors
 
   def initialize(link:, title:, year:, countries:, date:, genres:, duration:,
-      rate:, director:, actors:)
+      rate:, director:, actors:, collection:)
     @link = link.to_i
     @title = title
     @year = year.to_i
@@ -15,15 +15,30 @@ class Movie
     @rate = rate.to_f
     @director = director
     @actors = actors.split(",")
+    @collection = collection
   end
 
   def month
     @date.month
   end
 
-  def has_genre?(genre, movies)
-    raise ArgumentError, " Нет такого жанра: #{genre}.}" unless movies.include_genre?(genre)
+  def has_genre?(genre)
+    raise ArgumentError, " Нет такого жанра: #{genre}.}" unless @collection.include_genre?(genre)
     genres.include?(genre)
+  end
+
+  def match_filter?(name, value)
+    f = self.send(name)
+    case value
+      when Range, Regexp
+        if f.is_a?(Array)
+          f.any? {|i| value === i}
+        else
+          value === f
+        end
+      else
+        f.include?(value)
+      end
   end
 
   private

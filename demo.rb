@@ -63,9 +63,9 @@ puts "\nАктеры первого фильма"
 puts movies.all.first.actors
 
 begin
-  puts movies.all.first.has_genre?('Comedy', movies)
-  puts movies.all.first.has_genre?('выапComedy', movies)
-  puts movies.all.first.has_genre?('Cdomedy', movies)
+  puts movies.all.first.has_genre?('Comedy')
+  puts movies.all.first.has_genre?('выапComedy')
+  puts movies.all.first.has_genre?('Cdomedy')
 rescue ArgumentError => err
   puts err
 end
