@@ -10,11 +10,7 @@ class MovieCollection
     abort "Ошибка! Файл #{file_name} не найден." unless File.file?("./#{file_name}")
 
     @movies = CSV.read(file_name, { :col_sep => COL_SEP })
-      .map { |movie| #puts FIELDS.zip(movie).to_h[:collection] = self
-        Movie.new (FIELDS.zip(movie)<<[:collection, self]).to_h
-         # Movie.new(FIELDS.zip(movie).to_h, collection: self)
-      }
-    existing_genres
+      .map { |movie| Movie.new(**FIELDS.zip(movie).to_h, collection: self) }
   end
 
   def all
@@ -26,8 +22,8 @@ class MovieCollection
   end
 
   def filter(parameters = {})
-    parameters.reduce(@movies) do |filtrated, parameter|
-      filtrated.select { |m| m.match_filter?(parameter[0], parameter[1]) }
+    parameters.reduce(@movies) do |filtrated, (key, value)|
+      filtrated.select { |m| m.match_filter?(key, value) }
     end
   end
 
