@@ -10,7 +10,10 @@ class MovieCollection
     abort "Ошибка! Файл #{file_name} не найден." unless File.file?("./#{file_name}")
 
     @movies = CSV.read(file_name, { :col_sep => COL_SEP })
-      .map { |movie| Movie.new (FIELDS.zip(movie)<<[:collection, self]).to_h }
+      .map { |movie| #puts FIELDS.zip(movie).to_h[:collection] = self
+        Movie.new (FIELDS.zip(movie)<<[:collection, self]).to_h
+         # Movie.new(FIELDS.zip(movie).to_h, collection: self)
+      }
     existing_genres
   end
 
@@ -23,30 +26,24 @@ class MovieCollection
   end
 
   def filter(parameters = {})
-    movies = @movies.dup
-    parameters.each do |field, value|
-      movies = movies.reduce(Array.new) do |filtrated, m|
-        filtrated << m if m.match_filter?(field, value);
-        filtrated
-      end
+    parameters.reduce(@movies) do |filtrated, parameter|
+      filtrated.select { |m| m.match_filter?(parameter[0], parameter[1]) }
     end
-    return movies
   end
 
   def stats(param)
     @movies
-      .map { |m| m.send(param)}
+      .map(&param)
       .flatten
       .each_with_object(Hash.new { 0 }) { |m, stats| stats[m] += 1}
       .sort
   end
 
   def existing_genres
-    @existing_genres ||= @movies.map { |m| m.genres } .flatten.uniq
+    @existing_genres ||= @movies.flat_map(&:genres).uniq
   end
 
   def include_genre?(genre)
-    @existing_genres.include?(genre)
+    existing_genres.include?(genre)
   end
 end
-

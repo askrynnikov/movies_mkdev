@@ -29,16 +29,11 @@ class Movie
 
   def match_filter?(name, value)
     f = self.send(name)
-    case value
-      when Range, Regexp
-        if f.is_a?(Array)
-          f.any? {|i| value === i}
-        else
-          value === f
-        end
-      else
-        f.include?(value)
-      end
+    if f.is_a?(Array)
+      f.any? {|i| value === i}
+    else
+      value === f
+    end
   end
 
   private
